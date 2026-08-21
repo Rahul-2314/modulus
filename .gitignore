@@ -1,0 +1,24 @@
+# Environment variables
+.env
+.env.local
+.env.development
+.env.production
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+.next/
+coverage/
+
+# Logs
+*.log
+
+# System files
+.DS_Store
+
+# AI agent / editor generated files - ignore anywhere
+**/.agents/skills/
+**/.claude/skills/
+**/.windsurf/
