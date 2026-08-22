@@ -11,3 +11,69 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum MembershipRole {
+  owner
+  admin
+  member
+}
+
+model User {
+  id              String        @id @default(uuid())
+  email           String        @unique
+  passwordHash    String        @map("password_hash")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  memberships     Membership[]
+
+  @@map("users")
+}
+
+model Organization {
+  id            String        @id @default(uuid())
+  name          String
+  createdAt     DateTime      @default(now()) @map("created_at")
+  memberships   Membership[]
+  projects      Project[]
+
+  @@map("organizations")
+}
+
+model Membership {
+  id              String          @id @default(uuid())
+  userId          String          @map("user_id")
+  organizationId  String          @map("organization_id")
+  role            MembershipRole  @default(member)
+  createdAt       DateTime        @default(now()) @map("created_at")
+
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+  @@map("memberships")
+}
+
+model Project {
+  id                String          @id @default(uuid())
+  organizationId    String          @map("organization_id")
+  name              String
+  environment       String          @default("development")
+  createdAt         DateTime        @default(now()) @map("created_at")
+
+  organization      Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  apiKeys           ApiKey[]
+
+  @@map("projects")
+}
+
+model ApiKey {
+  id          String      @id @default(uuid())
+  projectId   String      @map("project_id")
+  keyHash     String      @map("key_hash")
+  prefix      String
+  revokedAt   DateTime?   @map("revoked_at")
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("api_keys")
+}

@@ -1,16 +1,17 @@
-# Environment variables
-.env
-.env.local
-.env.development
-.env.production
+# Environment variables (examples are intentionally committed)
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.*.example
 
 # Dependencies
-node_modules/
+**/node_modules/
 
 # Build outputs
-dist/
-.next/
-coverage/
+**/dist/
+**/.next/
+**/coverage/
+**/*.tsbuildinfo
 
 # Logs
 *.log
@@ -22,3 +23,6 @@ coverage/
 **/.agents/skills/
 **/.claude/skills/
 **/.windsurf/
+
+# Prisma client is generated locally from packages/database/prisma/schema.prisma
+packages/database/generated/prisma/
