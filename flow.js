@@ -37,6 +37,11 @@ function main() {
 	}
 
 	git("branch", "-M", "main");
+	try {
+		git("fetch", "origin", "main");
+	} catch {
+		// A newly created remote may not have a main branch yet.
+	}
 	git("add", "--all");
 
 	try {
@@ -45,6 +50,14 @@ function main() {
 	} catch {
 		const timestamp = new Date().toISOString().replace("T", " ").replace("Z", " UTC");
 		git("commit", "-m", `chore: sync project (${timestamp})`);
+	}
+
+	try {
+		git("merge-base", "--is-ancestor", "origin/main", "HEAD");
+	} catch {
+		// This is a normal merge when GitHub has newer work. If conflicts occur,
+		// Git stops and leaves them for review instead of overwriting either side.
+		git("merge", "--no-edit", "--allow-unrelated-histories", "origin/main");
 	}
 
 	git("push", "--set-upstream", "origin", "main");
