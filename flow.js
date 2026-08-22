@@ -37,6 +37,12 @@ function main() {
 	}
 
 	git("branch", "-M", "main");
+	const webEntry = git("ls-files", "--stage", "apps/web");
+	if (webEntry.startsWith("160000 ")) {
+		// Convert a leftover embedded-repository pointer into ordinary source files.
+		git("rm", "--cached", "--ignore-unmatch", "apps/web");
+		git("add", "apps/web");
+	}
 	try {
 		git("fetch", "origin", "main");
 	} catch {
