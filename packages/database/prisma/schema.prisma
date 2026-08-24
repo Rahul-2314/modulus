@@ -12,12 +12,14 @@ datasource db {
   provider = "postgresql"
 }
 
+// membership role
 enum MembershipRole {
   owner
   admin
   member
 }
 
+// user schema
 model User {
   id              String        @id @default(uuid())
   email           String        @unique
@@ -28,6 +30,7 @@ model User {
   @@map("users")
 }
 
+// organization schema
 model Organization {
   id            String        @id @default(uuid())
   name          String
@@ -38,6 +41,7 @@ model Organization {
   @@map("organizations")
 }
 
+// membership details schema
 model Membership {
   id              String          @id @default(uuid())
   userId          String          @map("user_id")
@@ -52,6 +56,7 @@ model Membership {
   @@map("memberships")
 }
 
+// project schema
 model Project {
   id                String          @id @default(uuid())
   organizationId    String          @map("organization_id")
@@ -60,11 +65,13 @@ model Project {
   createdAt         DateTime        @default(now()) @map("created_at")
 
   organization      Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  agents            Agent[]
   apiKeys           ApiKey[]
 
   @@map("projects")
 }
 
+// api key schema
 model ApiKey {
   id          String      @id @default(uuid())
   projectId   String      @map("project_id")
@@ -76,4 +83,83 @@ model ApiKey {
   project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@map("api_keys")
+}
+
+// agent schema
+model Agent {
+  id                String      @id @default(uuid())
+  projectId         String      @map("project_id")
+  name              String
+  framework         String?
+  adapterVersion    String?     @map("adapter_version")
+  createdAt         DateTime    @default(now()) @map("created_at")
+
+  project           Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  executions         Execution[]
+
+  @@unique([projectId, name])
+  @@map("agents")
+}
+
+// execution state
+enum ExecutionStatus {
+  running
+  succeeded
+  failed
+}
+
+// execution state schema (id - OTel trace id)
+model Execution {
+  id          String      @id
+  agentId     String      @map("agent_id")
+  status      ExecutionStatus   @default(running)
+  startedAt   DateTime    @map("started_at")
+  endedAt     DateTime?   @map("ended_at")
+  input       Json?
+  output      Json?
+  cost        Decimal?        @db.Decimal(10, 4) @map("cost")
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  agent      Agent       @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  events      ExecutionEvent[]
+  toolCalls   ToolCall[]
+
+  @@index([agentId, startedAt])
+  @@map("executions")
+}
+
+// exec event schema (type - type of events(start, end, error, call etc.))
+model ExecutionEvent {
+  id            String    @id @default(uuid())
+  executionId   String    @map("execution_id")
+  type          String
+  timestamp     DateTime
+  payload       Json
+
+  execution     Execution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+
+  @@index([executionId, timestamp])
+  @@map("execution_events")
+}
+
+enum ToolCallStatus {
+  success
+  error
+}
+
+// tool calling state schema
+model ToolCall {
+  id            String      @id @default(uuid())
+  executionId   String      @map("execution_id")
+  toolName      String      @map("tool_name")
+  arguments     Json
+  response      Json?
+  status        ToolCallStatus
+  latency       Int         @map("latency")
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  execution     Execution   @relation(fields: [executionId], references: [id], onDelete: Cascade)
+
+  @@index([executionId])
+  @@map("tool_calls")
 }
