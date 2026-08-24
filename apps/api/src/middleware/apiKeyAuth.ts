@@ -3,6 +3,7 @@ import { prisma } from "../lib/db";
 import { hashApiKey } from "../lib/apiKeys";
 import { ApiError } from "../lib/errors";
 
+/* eslint-disable @typescript-eslint/no-namespace */
 declare global {
 	namespace Express {
 		interface Request {

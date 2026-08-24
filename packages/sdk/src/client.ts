@@ -5,6 +5,7 @@ interface ModulusClientConfig {
 }
 
 export class ModulusClient {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	private spans: any[] = [];
 	private traceId = crypto.randomUUID().replace(/-/g, "");
 

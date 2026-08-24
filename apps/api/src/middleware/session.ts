@@ -3,6 +3,7 @@ import { verifySession, SESSION_COOKIE } from "../lib/auth";
 import { ApiError } from "../lib/errors";
 import { prisma } from "../lib/db";
 
+/* eslint-disable @typescript-eslint/no-namespace */
 declare global {
 	namespace Express {
 		interface Request {

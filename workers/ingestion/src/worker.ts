@@ -50,6 +50,7 @@ export const ingestionWorker = new Worker(
 					executionId: normalized.executionId,
 					type: e.type,
 					timestamp: e.timestamp,
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
 					payload: redact(e.payload) as any,
 				})),
 				skipDuplicates: true,
@@ -61,7 +62,9 @@ export const ingestionWorker = new Worker(
 				data: normalized.toolCalls.map((t) => ({
 					executionId: normalized.executionId,
 					toolName: t.toolName,
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
 					arguments: redact(t.arguments) as any,
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
 					response: t.response ? (redact(t.response) as any) : undefined,
 					status: t.status,
 					latencyMs: t.latencyMs,
