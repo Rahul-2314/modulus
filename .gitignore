@@ -26,3 +26,10 @@
 
 # Prisma client is generated locally from packages/database/prisma/schema.prisma
 packages/database/generated/prisma/
+
+# Build outputs
+**/dist/
+**/.next/
+**/.turbo/
+**/coverage/
+**/*.tsbuildinfo
