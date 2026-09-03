@@ -1,0 +1,26 @@
+{
+	"name": "@modulus/queues",
+	"version": "1.0.0",
+	"type": "module",
+	"main": "./dist/queues.js",
+	"types": "./dist/queues.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/queues.d.ts",
+			"import": "./dist/queues.js"
+		},
+		"./metrics": {
+			"types": "./dist/metrics.d.ts",
+			"import": "./dist/metrics.js"
+		}
+	},
+	"scripts": {
+		"build": "tsc",
+		"dev": "tsc --watch",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"bullmq": "^5.0.0",
+		"ioredis": "^5.11.1"
+	}
+}

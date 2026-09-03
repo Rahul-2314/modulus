@@ -1,0 +1,3 @@
+import { ModulusLangGraphHandler } from "@modulus/adapter-langgraph";
+const modulus = new ModulusLangGraphHandler({ apiKey, agentName: "planning-graph" });
+await graph.invoke(input, { callbacks: [modulus] });

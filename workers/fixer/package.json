@@ -1,0 +1,26 @@
+{
+	"name": "fixer",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"type": "module",
+	"scripts": {
+		"build": "tsc -p tsconfig.json",
+		"typecheck": "tsc --noEmit -p tsconfig.json",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"@modulus/config": "*",
+		"@modulus/database": "*",
+		"@modulus/fixtures": "*",
+		"@modulus/github": "*",
+		"@modulus/llm": "*",
+		"@modulus/sandbox": "*",
+		"@modulus/cost-tier": "1.0.0",
+		"bullmq": "^6.2.0",
+		"simple-git": "^3.36.0"
+	}
+}

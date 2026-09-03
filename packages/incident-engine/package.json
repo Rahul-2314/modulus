@@ -1,0 +1,23 @@
+{
+	"name": "@modulus/incident-engine",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"build": "tsc -p tsconfig.json",
+		"typecheck": "tsc --noEmit -p tsconfig.json",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		}
+	},
+	"keywords": [],
+	"type": "module",
+	"dependencies": {
+		"@modulus/database": "^1.0.0",
+		"@modulus/queues": "^1.0.0"
+	}
+}

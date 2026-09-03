@@ -1,0 +1,4 @@
+from modulus_adapter_langgraph import ModulusLangGraphHandler
+
+modulus = ModulusLangGraphHandler(api_key=os.environ["MODULUS_API_KEY"], agent_name="planning-graph")
+graph.invoke(input, config={"callbacks": [modulus]})

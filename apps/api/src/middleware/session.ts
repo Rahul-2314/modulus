@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
-import { verifySession, SESSION_COOKIE } from "../lib/auth";
+import { fromNodeHeaders } from "better-auth/node";
+import { auth } from "../lib/auth/auth";
 import { ApiError } from "../lib/errors";
 import { prisma } from "../lib/db";
 
@@ -18,21 +19,13 @@ export async function requireSession(
 	next: NextFunction,
 ) {
 	try {
-		const token = req.cookies?.[SESSION_COOKIE];
-		if (!token) throw new ApiError(401, "UNAUTHENTICATED", "No active session");
-
-		const payload = verifySession(token);
-		const user = await prisma.user.findUnique({
-			where: { id: payload.userId },
+		const session = await auth.api.getSession({
+			headers: fromNodeHeaders(req.headers),
 		});
-		if (!user)
-			throw new ApiError(
-				401,
-				"UNAUTHENTICATED",
-				"Session user no longer exists",
-			);
+		if (!session)
+			throw new ApiError(401, "UNAUTHENTICATED", "No active session");
 
-		req.user = { id: user.id, email: user.email };
+		req.user = { id: session.user.id, email: session.user.email };
 		next();
 	} catch (err) {
 		if (err instanceof ApiError) return next(err);

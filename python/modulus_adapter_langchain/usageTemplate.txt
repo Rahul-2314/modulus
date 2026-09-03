@@ -1,0 +1,6 @@
+from modulus_adapter_langchain import ModulusCallbackHandler
+from langchain.agents import AgentExecutor
+
+modulus = ModulusCallbackHandler(api_key=os.environ["MODULUS_API_KEY"], agent_name="support-agent", known_tools=["search_kb", "create_ticket"])
+executor = AgentExecutor(agent=agent, tools=tools, callbacks=[modulus])
+executor.invoke({"input": "..."})

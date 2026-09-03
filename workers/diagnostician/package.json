@@ -1,0 +1,26 @@
+{
+	"name": "diagnostician",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"type": "module",
+	"scripts": {
+		"build": "tsc -p tsconfig.json",
+		"typecheck": "tsc --noEmit -p tsconfig.json",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"@modulus/config": "*",
+		"@modulus/database": "^1.0.0",
+		"@modulus/llm": "^1.0.0",
+		"@modulus/cost-tier": "1.0.0",
+		"@modulus/otel-core": "^1.0.0",
+		"@modulus/queues": "^1.0.0",
+		"@modulus/vector-store": "^1.0.0",
+		"bullmq": "^6.2.2",
+		"zod": "^4.4.3"
+	}
+}

@@ -18,6 +18,8 @@ export const ingestPayloadSchema = z.object({
 		"modulus.agent.name": z.string(),
 		"modulus.agent.framework": z.string().optional(),
 		"modulus.adapter.version": z.string().optional(),
+		"modulus.git.commit_sha": z.string().optional(), // codebase git commit track
+		"modulus.agent.tools": z.array(z.string()).optional(),	// tool call track
 	}),
 	spans: z.array(otelSpanSchema).min(1).max(500), // bounded batch size
 });

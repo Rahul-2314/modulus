@@ -1,0 +1,16 @@
+{
+	"name": "alo-evaluator",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"build": "tsc -p tsconfig.json",
+		"typecheck": "tsc --noEmit -p tsconfig.json",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"keywords": [],
+	"type": "module",
+	"dependencies": {
+		"@modulus/database": "^1.0.0"
+	}
+}

@@ -1,45 +1,61 @@
 {
-  "name": "api",
-  "version": "1.0.0",
-  "type": "module",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "dev": "tsx src/index.ts",
-    "start": "tsx src/index.ts",
-    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json",
-    "test": "vitest run"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@prisma/adapter-pg": "^7.9.1",
-    "@prisma/client": "^7.9.1",
-    "bcrypt": "^6.0.0",
-    "bullmq": "^6.2.0",
-    "cookie-parser": "^1.4.7",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "express-rate-limit": "^8.6.2",
-    "jsonwebtoken": "^9.0.3",
-    "pg": "^8.23.0",
-    "pino": "^10.3.1",
-    "zod": "^4.4.3"
-  },
-  "devDependencies": {
-    "@types/bcrypt": "^6.0.0",
-    "@types/cookie-parser": "^1.4.10",
-    "@types/express": "^5.0.6",
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^26.2.0",
-    "@types/supertest": "^7.2.1",
-    "nodemon": "^3.1.14",
-    "prisma": "^7.9.1",
-    "supertest": "^7.2.2",
-    "ts-node": "^10.9.2",
-    "tsx": "^4.23.12",
-    "typescript": "^7.0.2",
-    "vitest": "^4.1.11"
-  }
+	"name": "@modulus/api",
+	"version": "1.0.0",
+	"type": "module",
+	"description": "",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		}
+	},
+	"scripts": {
+		"build": "tsc -p tsconfig.json",
+		"dev": "tsx src/index.ts",
+		"start": "tsx src/index.ts",
+		"typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json",
+		"test": "vitest run src/tests"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"@modulus/config": "*",
+		"@modulus/crypto": "*",
+		"@modulus/database": "*",
+		"@modulus/email": "*",
+		"@modulus/github": "*",
+		"@modulus/otel-core": "*",
+		"@modulus/queues": "*",
+		"@prisma/adapter-pg": "^7.9.1",
+		"@prisma/client": "^7.9.1",
+		"better-auth": "^1.7.2",
+		"bullmq": "^6.2.0",
+		"cookie-parser": "^1.4.7",
+		"cors": "^2.8.6",
+		"dotenv": "^17.4.2",
+		"express": "^5.2.1",
+		"express-rate-limit": "^8.6.2",
+		"pg": "^8.23.0",
+		"pino": "^10.3.1",
+		"zod": "^4.4.3"
+	},
+	"devDependencies": {
+		"@types/bcrypt": "^6.0.0",
+		"@types/cookie-parser": "^1.4.10",
+		"@types/cors": "^2.8.19",
+		"@types/express": "^5.0.6",
+		"@types/jsonwebtoken": "^9.0.10",
+		"@types/node": "^26.2.0",
+		"@types/supertest": "^7.2.1",
+		"nodemon": "^3.1.14",
+		"prisma": "^7.9.1",
+		"supertest": "^7.2.2",
+		"ts-node": "^10.9.2",
+		"tsx": "^4.23.12",
+		"typescript": "^7.0.2",
+		"vitest": "^4.1.11"
+	}
 }

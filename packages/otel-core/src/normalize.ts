@@ -2,18 +2,22 @@ import type { IngestPayload, OtelSpan } from "./schema.js";
 
 export type ExecutionStatus = "running" | "succeeded" | "failed";
 
-export type EventType = "span" | "model_call" | "tool_call" | "error";
+// export type EventType = "span" | "model_call" | "tool_call" | "error";
+export type EventType = "span" | "chain" | "retrieval" | "model_call" | "tool_call" | "error";
 
 export interface NormalizedExecution {
 	executionId: string;
 	agentName: string;
 	framework?: string;
 	adapterVersion?: string;
+	commitSha?: string;
 	startedAt: Date;
 	endedAt?: Date;
 	status: ExecutionStatus;
 	events: NormalizedEvent[];
 	toolCalls: NormalizedToolCall[];
+	knownTools?: string[];
+	costALO?: number;
 }
 
 export interface NormalizedEvent {
@@ -55,28 +59,21 @@ function getRootSpan(spans: OtelSpan[]): OtelSpan {
 	return spans.find((span) => !span.parentSpanId) ?? firstSpan;
 }
 
-/**
- * Determines the normalized event type.
- */
-function getEventType(span: OtelSpan): EventType {
-	if (span.status === "error") {
-		return "error";
-	}
 
-	if (span.attributes["modulus.tool.name"] !== undefined) {
+// Determines the normalized event type.
+function classifyEventType(s: OtelSpan): EventType {
+	if (s.status === "error") return "error";
+	if (s.name === "chain") return "chain";
+	if (s.attributes["modulus.retrieval.result_count"] !== undefined)
+		return "retrieval";
+	if (s.attributes["modulus.tool.name"] !== undefined)
 		return "tool_call";
-	}
-
-	if (span.attributes["modulus.model.name"] !== undefined) {
+	if (s.attributes["modulus.model.name"] !== undefined)
 		return "model_call";
-	}
-
 	return "span";
 }
 
-/**
- * Calculates span duration in milliseconds.
- */
+// Calculates span duration in milliseconds.
 function getLatencyMs(span: OtelSpan): number {
 	if (!span.endTimeUnixNano) {
 		return 0;
@@ -93,10 +90,9 @@ function getLatencyMs(span: OtelSpan): number {
 	return Number((end - start) / 1_000_000n);
 }
 
-/**
- * Converts an OTel span representing a tool invocation
- * into Modulus's normalized tool call format.
- */
+
+// Converts an OTel span representing a tool invocation
+// into Modulus's normalized tool call format.
 function toToolCall(span: OtelSpan): NormalizedToolCall {
 	const response = span.attributes["modulus.tool.response"];
 
@@ -113,17 +109,17 @@ function toToolCall(span: OtelSpan): NormalizedToolCall {
 	};
 }
 
-/**
- * Normalizes a raw OpenTelemetry ingest payload
- * into Modulus's internal execution representation.
- */
+
+// Normalizes a raw OpenTelemetry ingest payload
+// into Modulus's internal execution representation.
+
 export function normalizeIngestPayload(
 	payload: IngestPayload,
 ): NormalizedExecution {
 	const rootSpan = getRootSpan(payload.spans);
 
 	const events: NormalizedEvent[] = payload.spans.map((span) => ({
-		type: getEventType(span),
+		type: classifyEventType(span),
 
 		timestamp: nsToDate(span.startTimeUnixNano),
 
@@ -146,6 +142,10 @@ export function normalizeIngestPayload(
 
 	const adapterVersion = payload.resourceAttributes["modulus.adapter.version"];
 
+	const commitSha = payload.resourceAttributes["modulus.git.commit_sha"];
+
+	const knownTools = payload.resourceAttributes["modulus.agent.tools"];
+
 	const endedAt = rootSpan.endTimeUnixNano
 		? nsToDate(rootSpan.endTimeUnixNano)
 		: undefined;
@@ -156,6 +156,11 @@ export function normalizeIngestPayload(
 			? "succeeded"
 			: "running";
 
+	const costALO = payload.spans.reduce((sum, s) => {
+		const cost = s.attributes["modulus.model.cost_alo"];
+		return typeof cost === "number" ? sum + cost : sum;
+	}, 0);
+
 	return {
 		executionId: rootSpan.traceId,
 
@@ -164,6 +169,10 @@ export function normalizeIngestPayload(
 		...(framework !== undefined ? { framework } : {}),
 
 		...(adapterVersion !== undefined ? { adapterVersion } : {}),
+
+		...(commitSha !== undefined ? { commitSha } : {}),
+
+		...(knownTools !== undefined ? { knownTools } : {}),
 
 		startedAt: nsToDate(rootSpan.startTimeUnixNano),
 
@@ -174,6 +183,8 @@ export function normalizeIngestPayload(
 		events,
 
 		toolCalls,
+
+		costALO: costALO > 0 ? costALO : undefined,
 	};
 }
 

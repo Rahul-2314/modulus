@@ -5,6 +5,8 @@
 	"main": "index.js",
 	"type": "module",
 	"scripts": {
+		"build": "tsc -p tsconfig.json",
+		"typecheck": "tsc --noEmit -p tsconfig.json",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"keywords": [],
@@ -13,16 +15,24 @@
 	"dependencies": {
 		"zod": "^4.4.3"
 	},
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./schema": {
-      "types": "./dist/schema.d.ts",
-      "import": "./dist/schema.js"
-    }
-  },
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./schema": {
+			"types": "./dist/schema.d.ts",
+			"import": "./dist/schema.js"
+		},
+		"./normalize": {
+			"types": "./dist/normalize.d.ts",
+			"import": "./dist/normalize.js"
+		},
+		"./redact": {
+			"types": "./dist/redact.d.ts",
+			"import": "./dist/redact.js"
+		}
+	},
 	"devDependencies": {
 		"typescript": "^7.0.2"
 	}

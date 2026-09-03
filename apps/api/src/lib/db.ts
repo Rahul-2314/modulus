@@ -1,6 +1,6 @@
 import "./env";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "../../../../packages/database/generated/prisma/client";
+import { PrismaClient } from "@modulus/database";
 // import { PrismaClient } from "@modulus/database";
 
 const connectionString = process.env.DATABASE_URL;
@@ -11,4 +11,5 @@ if (!connectionString) {
 
 const adapter = new PrismaPg({ connectionString });
 
-export const prisma = new PrismaClient({ adapter });
+// this file no need already present in @modulus/database, but i still implemented this for loacal import
+export const prisma: PrismaClient = new PrismaClient({ adapter });

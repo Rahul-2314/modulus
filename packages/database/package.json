@@ -3,14 +3,25 @@
 	"version": "1.0.0",
 	"description": "",
 	"type": "module",
-	"main": "index.js",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		}
+	},
 	"scripts": {
+		"build": "prisma generate && tsc -p tsconfig.json",
+		"typecheck": "prisma generate && tsc --noEmit -p tsconfig.json",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
+		"@modulus/config": "*",
+		"@prisma/adapter-pg": "^7.9.1",
 		"@prisma/client": "^7.9.1",
 		"prisma": "^7.9.1"
 	}
