@@ -19,83 +19,177 @@ enum MembershipRole {
   member
 }
 
-// user schema
+// User state schema (better-auth)
 model User {
-  id              String        @id @default(uuid())
-  email           String        @unique
-  passwordHash    String        @map("password_hash")
-  createdAt       DateTime      @default(now()) @map("created_at")
-  memberships     Membership[]
+  id               String   @id @default(uuid())
+  name             String
+  email            String   @unique
+  emailVerified    Boolean  @default(false)
+  image            String?
+  twoFactorEnabled Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  @@map("users")
+  sessions    Session[]
+  accounts    Account[]
+  twoFactors  TwoFactor[]
+  memberships Membership[]
+
+  @@map("user")
 }
+
+// session management schema
+model Session {
+  id        String   @id @default(uuid())
+  expiresAt DateTime
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("session")
+}
+
+// account management (better-auth)
+model Account {
+  id                    String   @id @default(uuid())
+  accountId             String
+  providerId            String    // email/password or google/github for OAuth
+  userId                String
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?   // the password hash lives here, not on User - matches Better-Auth default shape
+
+  issuer                String
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@map("account")
+  @@unique([issuer, accountId])
+}
+
+// user verification (better-auth)
+model Verification {
+  id         String    @id @default(uuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verification")
+}
+
+// 2FA schema (better-auth)
+model TwoFactor {
+  id          String @id @default(uuid())
+  secret      String
+  backupCodes String
+  userId      String
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("two_factor")
+}
+
+// modulus platform schema
 
 // organization schema
 model Organization {
-  id            String        @id @default(uuid())
-  name          String
-  createdAt     DateTime      @default(now()) @map("created_at")
-  memberships   Membership[]
-  projects      Project[]
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  memberships Membership[]
+  projects    Project[]
+  auditLogs   AuditLog[]
 
   @@map("organizations")
 }
 
 // membership details schema
 model Membership {
-  id              String          @id @default(uuid())
-  userId          String          @map("user_id")
-  organizationId  String          @map("organization_id")
-  role            MembershipRole  @default(member)
-  createdAt       DateTime        @default(now()) @map("created_at")
+  id             String         @id @default(uuid())
+  userId         String         @map("user_id")
+  organizationId String         @map("organization_id")
+  role           MembershipRole @default(member)
+  createdAt      DateTime       @default(now()) @map("created_at")
 
-  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@unique([userId, organizationId])
   @@map("memberships")
 }
 
-// project schema
+// project schema (with alert dest)
 model Project {
-  id                String          @id @default(uuid())
-  organizationId    String          @map("organization_id")
-  name              String
-  environment       String          @default("development")
-  createdAt         DateTime        @default(now()) @map("created_at")
+  id                           String   @id @default(uuid())
+  organizationId               String   @map("organization_id")
+  name                         String
+  environment                  String   @default("development")
+  repositoryUrl                String?  @map("repository_url")
+  defaultBranch                String?  @default("main") @map("default_branch")
+  createdAt                    DateTime @default(now()) @map("created_at")
+  githubTokenEncrypted         String?  @map("github_token_encrypted") // per-project override and fallback to platform default
+  githubInstallationId         Int?     @map("github_installation_id")
+  githubWebhookSecretEncrypted String?  @map("github_webhook_secret_encrypted")
+  dataRetentionDays            Int      @default(90) @map("data_retention_days")
 
-  organization      Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  agents            Agent[]
-  apiKeys           ApiKey[]
+  notificationSlackWebhookEncrypted String?           @map("notification_slack_webhook_encrypted")
+  notificationPagerDutyKeyEncrypted String?           @map("notification_pagerduty_key_encrypted")
+  notificationEmail                 String?           @map("notification_email")
+  alertMinSeverity                  IncidentSeverity? @default(high) @map("alert_min_severity")
 
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  agents    Agent[]
+  apiKeys   ApiKey[]
+  incidents Incident[]
+
+  @@unique([organizationId, name])
   @@map("projects")
 }
 
+
 // api key schema
 model ApiKey {
-  id          String      @id @default(uuid())
-  projectId   String      @map("project_id")
-  keyHash     String      @map("key_hash")
+  id          String    @id @default(uuid())
+  projectId   String    @map("project_id")
+  keyHash     String    @unique @map("key_hash")
   prefix      String
-  revokedAt   DateTime?   @map("revoked_at")
-  createdAt   DateTime    @default(now()) @map("created_at")
+  revokedAt   DateTime? @map("revoked_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
 
-  project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
+  @@index([projectId])
+  @@index([prefix])
   @@map("api_keys")
 }
 
 // agent schema
 model Agent {
-  id                String      @id @default(uuid())
-  projectId         String      @map("project_id")
-  name              String
-  framework         String?
-  adapterVersion    String?     @map("adapter_version")
-  createdAt         DateTime    @default(now()) @map("created_at")
+  id             String      @id @default(uuid())
+  projectId      String      @map("project_id")
+  name           String
+  framework      String?
+  adapterVersion String?     @map("adapter_version")
+  knownTools     String[]    @default([])
+  createdAt      DateTime    @default(now()) @map("created_at")
 
-  project           Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  executions         Execution[]
+  project        Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  executions     Execution[]
+  objectives     AgentLevelObjective[]
 
   @@unique([projectId, name])
   @@map("agents")
@@ -110,19 +204,22 @@ enum ExecutionStatus {
 
 // execution state schema (id - OTel trace id)
 model Execution {
-  id          String      @id
-  agentId     String      @map("agent_id")
-  status      ExecutionStatus   @default(running)
-  startedAt   DateTime    @map("started_at")
-  endedAt     DateTime?   @map("ended_at")
-  input       Json?
-  output      Json?
-  cost        Decimal?        @db.Decimal(10, 4) @map("cost")
-  createdAt   DateTime    @default(now()) @map("created_at")
+  id                 String          @id
+  agentId            String          @map("agent_id")
+  status             ExecutionStatus @default(running)
+  startedAt          DateTime        @map("started_at")
+  endedAt            DateTime?       @map("ended_at")
+  input              Json?
+  output             Json?
+  cost               Decimal?        @map("cost") @db.Decimal(10, 4)
+  costALO            Decimal?        @map("cost_alo")
+  commitSha          String?         @map("commit_sha")
+  createdAt          DateTime        @default(now()) @map("created_at")
 
-  agent      Agent       @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  events      ExecutionEvent[]
-  toolCalls   ToolCall[]
+  agent              Agent           @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  events             ExecutionEvent[]
+  toolCalls          ToolCall[]
+  incidentExecutions IncidentExecution[]
 
   @@index([agentId, startedAt])
   @@map("executions")
@@ -130,13 +227,13 @@ model Execution {
 
 // exec event schema (type - type of events(start, end, error, call etc.))
 model ExecutionEvent {
-  id            String    @id @default(uuid())
-  executionId   String    @map("execution_id")
-  type          String
-  timestamp     DateTime
-  payload       Json
+  id          String   @id @default(uuid())
+  executionId String   @map("execution_id")
+  type        String
+  timestamp   DateTime
+  payload     Json
 
-  execution     Execution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  execution   Execution @relation(fields: [executionId], references: [id], onDelete: Cascade)
 
   @@index([executionId, timestamp])
   @@map("execution_events")
@@ -149,17 +246,289 @@ enum ToolCallStatus {
 
 // tool calling state schema
 model ToolCall {
-  id            String      @id @default(uuid())
-  executionId   String      @map("execution_id")
-  toolName      String      @map("tool_name")
-  arguments     Json
-  response      Json?
-  status        ToolCallStatus
-  latency       Int         @map("latency")
-  createdAt     DateTime    @default(now()) @map("created_at")
+  id          String         @id @default(uuid())
+  executionId String         @map("execution_id")
+  toolName    String         @map("tool_name")
+  arguments   Json
+  response    Json?
+  status      ToolCallStatus
+  latencyMs   Int            @map("latency_ms")
+  createdAt   DateTime       @default(now()) @map("created_at")
 
-  execution     Execution   @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  execution   Execution @relation(fields: [executionId], references: [id], onDelete: Cascade)
 
   @@index([executionId])
   @@map("tool_calls")
 }
+
+// Incident schema
+
+// IncidentSeverity levels
+enum IncidentSeverity {
+  low
+  medium
+  high
+  critical
+}
+
+// IncidentStatus 
+enum IncidentStatus {
+  open
+  acknowledged
+  resolved
+}
+
+// Incident Schema (rule - classifier rule key aggr)
+model Incident {
+  id              String           @id @default(uuid())
+  projectId       String           @map("project_id")
+  ruleId          String           @map("rule_id")
+  title           String
+  severity        IncidentSeverity @default(medium)
+  status          IncidentStatus   @default(open)
+  firstSeen       DateTime         @map("first_seen")
+  lastSeen        DateTime         @map("last_seen")
+  occurrenceCount Int              @default(1) @map("occurrence_count")
+  createdAt       DateTime         @default(now()) @map("created_at")
+
+  project         Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  executions      IncidentExecution[]
+  diagnosis       Diagnosis?
+  reproductions   Reproduction[]
+  fix             Fix?
+
+  @@index([projectId, ruleId, status])
+  @@map("incidents")
+}
+
+// Incident execution state schema
+model IncidentExecution {
+  id          String    @id @default(uuid())
+  incidentId  String    @map("incident_id")
+  executionId String    @map("execution_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  incident    Incident  @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  execution   Execution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+
+  @@unique([incidentId, executionId])
+  @@map("incident_executions")
+}
+
+// Diagnosis schema
+model Diagnosis {
+  id                   String   @id @default(uuid())
+  incidentId           String   @unique @map("incident_id")
+  rootCause            String   @map("root_cause")
+  confidence           Float
+  affectedComponent    String   @map("affected_component")
+  suggestedRemediation String   @map("suggested_remediation")
+  evidence             Json
+  model                String
+  cost                 Float    @map("cost")
+  cacheHit             Boolean  @default(false) @map("cache_hit")
+  provider             String   @default("groq")
+  fellBack             Boolean  @default(false)
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  incident             Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+
+  @@map("diagnoses")
+}
+
+// Reproduction schema
+
+enum ReproductionStatus {
+  queued
+  running
+  reproduced
+  not_reproduced
+  error
+}
+
+model Reproduction {
+  id          String             @id @default(uuid())
+  incidentId  String             @map("incident_id")
+  status      ReproductionStatus @default(queued)
+  environment String
+  result      Json?
+  logs        String?
+  createdAt   DateTime           @default(now()) @map("created_at")
+  updatedAt   DateTime           @updatedAt @map("updated_at")
+
+  incident Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+
+  @@index([incidentId])
+  @@map("reproductions")
+}
+
+// Fix state schema
+
+enum FixRiskLevel {
+  low
+  medium
+  high
+}
+
+enum FixStatus {
+  generating
+  validated
+  tests_passed
+  tests_failed
+  pr_created
+  needs_review
+}
+
+model Fix {
+  id         String       @id @default(uuid())
+  incidentId String       @unique @map("incident_id")
+  strategy   String
+  diff       String
+  filePath   String       @map("file_path")
+  riskLevel  FixRiskLevel @map("risk_level")
+  status     FixStatus    @default(generating)
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+
+  incident    Incident     @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  testRuns    TestRun[]
+  pullRequest PullRequest?
+
+  @@map("fixes")
+}
+
+model TestRun {
+  id         String   @id @default(uuid())
+  fixId      String   @map("fix_id")
+  suite      String // "reproduction" | "regression"
+  passed     Int
+  failed     Int
+  durationMs Int      @map("duration_ms")
+  report     Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  fix Fix @relation(fields: [fixId], references: [id], onDelete: Cascade)
+
+  @@map("test_runs")
+}
+
+enum PullRequestStatus {
+  pending
+  open
+  merged
+  closed
+}
+
+model PullRequest {
+  id         String            @id @default(uuid())
+  fixId      String            @unique @map("fix_id")
+  repository String
+  branch     String
+  prNumber   Int?              @map("pr_number")
+  url        String?
+  status     PullRequestStatus @default(pending)
+  createdAt  DateTime          @default(now()) @map("created_at")
+
+  fix Fix @relation(fields: [fixId], references: [id], onDelete: Cascade)
+
+  @@map("pull_requests")
+}
+
+// Audit log flow state schema
+
+enum AuditAction {
+  login
+  api_key_created
+  api_key_revoked
+  project_created
+  incident_status_changed
+  fix_triggered
+  github_token_updated
+}
+
+model AuditLog {
+  id             String      @id @default(uuid())
+  organizationId String?     @map("organization_id") // user-level events login - null
+  userId         String?     @map("user_id")
+  action         AuditAction
+  resourceType   String      @map("resource_type")
+  resourceId     String      @map("resource_id")
+  metadata       Json?
+  ipAddress      String?     @map("ip_address")
+  createdAt      DateTime    @default(now()) @map("created_at")
+
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, createdAt])
+  @@map("audit_logs")
+}
+
+// modulus platfor own severity alert
+enum PlatformAlertSeverity {
+  warning
+  critical
+}
+
+model PlatformAlert {
+  id          String                @id @default(uuid())
+  source      String                // queue:diagnosis, dependency:groq, etc.
+  message     String
+  severity    PlatformAlertSeverity
+  metadata    Json?
+  createdAt   DateTime              @default(now()) @map("created_at")
+
+  @@index([source, createdAt])
+  @@map("platform_alerts")
+}
+
+// ALO Framework schema
+
+enum AloMetricType {
+  task_success_rate
+  tool_reliability
+  cost_per_task
+  completion_latency_p95
+  loop_rate
+}
+
+// floor and ceil
+enum AloComparator {
+  gte
+  lte
+}
+
+model AgentLevelObjective {
+  id              String            @id @default(uuid())
+  agentId         String            @map("agent_id")
+  metricType      AloMetricType     @map("metric_type")
+  comparator      AloComparator
+  targetValue     Float             @map("target_value")
+  windowDays      Int               @default(7) @map("window_days")
+  enabled         Boolean           @default(true)
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  agent           Agent             @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  evaluations     AloEvaluation[]
+
+  @@unique([agentId, metricType])
+  @@map("agent_level_objectives")
+}
+
+// failure budget consideration
+model AloEvaluation {
+  id              String              @id @default(uuid())
+  objectiveId     String              @map("objective_id")
+  currentValue    Float               @map("current_value")
+  budgetRemaining Float               @map("budget_remaining")
+  breached        Boolean
+  sampleSize      Int                 @map("sample_size")
+  evaluatedAt     DateTime            @default(now()) @map("evaluated_at")
+
+  objective       AgentLevelObjective @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+
+  @@index([objectiveId, evaluatedAt])
+  @@map("alo_evaluations")
+}
+

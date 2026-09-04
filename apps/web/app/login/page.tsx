@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
 
 export default function LoginPage() {
 	const [email, setEmail] = useState("");
@@ -11,15 +12,16 @@ export default function LoginPage() {
 	async function handleSubmit(e: React.FormEvent) {
 		e.preventDefault();
 		setError(null);
-		const res = await fetch("/api/auth/login", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			credentials: "include",
-			body: JSON.stringify({ email, password }),
-		});
-		const data = await res.json();
-		if (!data.success) return setError(data.error.message);
-		router.push("/projects");
+		await authClient.signIn.email(
+			{ email, password },
+			{
+				onSuccess: (ctx) => {
+					// Better Auth's own 2FA (no custom "pending 2FA" state to track)
+					router.push(ctx.data.twoFactorRedirect ? "/two-factor" : "/projects");
+				},
+				onError: (ctx) => setError(ctx.error.message),
+			},
+		);
 	}
 
 	return (
@@ -45,6 +47,30 @@ export default function LoginPage() {
 					Log in
 				</button>
 			</form>
+			<div className="flex flex-col gap-2 mt-4">
+				<button
+					onClick={() =>
+						authClient.signIn.social({
+							provider: "google",
+							callbackURL: "/projects",
+						})
+					}
+					className="border rounded p-2 text-sm hover:bg-gray-50"
+				>
+					Continue with Google
+				</button>
+				<button
+					onClick={() =>
+						authClient.signIn.social({
+							provider: "github",
+							callbackURL: "/projects",
+						})
+					}
+					className="border rounded p-2 text-sm hover:bg-gray-50"
+				>
+					Continue with GitHub
+				</button>
+			</div>
 		</div>
 	);
 }

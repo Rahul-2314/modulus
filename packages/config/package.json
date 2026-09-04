@@ -1,0 +1,21 @@
+{
+	"name": "@modulus/config",
+	"version": "1.0.0",
+	"description": "Shared local environment loading for Modulus services",
+	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		}
+	},
+	"scripts": {
+		"build": "tsc -p tsconfig.json",
+		"typecheck": "tsc --noEmit -p tsconfig.json"
+	},
+	"dependencies": {
+		"dotenv": "^17.4.2"
+	}
+}

@@ -1,0 +1,29 @@
+{
+	"name": "@modulus/vector-store",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"type": "module",
+	"exports": {
+		"./embeddings": {
+			"types": "./dist/embeddings.d.ts",
+			"import": "./dist/embeddings.js"
+		},
+		"./qdrant": {
+			"types": "./dist/qdrant.d.ts",
+			"import": "./dist/qdrant.js"
+		}
+	},
+	"scripts": {
+		"build": "tsc -p tsconfig.json",
+		"typecheck": "tsc --noEmit -p tsconfig.json",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"@qdrant/js-client-rest": "^1.19.0",
+		"@xenova/transformers": "^2.17.2"
+	}
+}

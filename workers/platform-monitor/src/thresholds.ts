@@ -1,0 +1,4 @@
+export const QUEUE_DEPTH_WARNING = 500;
+export const QUEUE_DEPTH_CRITICAL = 2000;
+export const FAILURE_RATE_WARNING = 0.1;
+export const FAILURE_RATE_CRITICAL = 0.3;

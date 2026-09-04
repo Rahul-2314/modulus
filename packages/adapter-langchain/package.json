@@ -1,0 +1,27 @@
+{
+	"name": "@modulus/adapter-langchain",
+	"version": "1.0.0",
+	"description": "",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"type": "module",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		}
+	},
+	"scripts": {
+		"build": "tsc -p tsconfig.json",
+		"typecheck": "tsc --noEmit -p tsconfig.json",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"keywords": [],
+	"dependencies": {
+		"@langchain/core": "^1.2.9",
+		"@modulus/sdk": "^1.0.0"
+	},
+	"devDependencies": {
+		"@types/node": "^26.4.0"
+	}
+}

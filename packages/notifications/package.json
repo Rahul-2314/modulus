@@ -1,0 +1,27 @@
+{
+	"name": "@modulus/notifications",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"build": "tsc -p tsconfig.json",
+		"typecheck": "tsc --noEmit -p tsconfig.json",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"exports": {
+		"./customer": {
+			"types": "./dist/customer.d.ts",
+			"import": "./dist/customer.js"
+		},
+		"./platform": {
+			"types": "./dist/platform.d.ts",
+			"import": "./dist/platform.js"
+		}
+	},
+	"keywords": [],
+	"type": "module",
+	"dependencies": {
+		"@modulus/crypto": "1.0.0",
+		"@modulus/email": "1.0.0"
+	}
+}

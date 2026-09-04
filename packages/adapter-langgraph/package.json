@@ -1,0 +1,23 @@
+{
+	"name": "@modulus/adapter-langgraph",
+	"version": "1.0.0",
+	"description": "",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"scripts": {
+		"build": "tsc -p tsconfig.json",
+		"typecheck": "tsc --noEmit -p tsconfig.json",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		}
+	},
+	"keywords": [],
+	"type": "commonjs",
+	"dependencies": {
+		"@modulus/adapter-langchain": "^1.0.0"
+	}
+}

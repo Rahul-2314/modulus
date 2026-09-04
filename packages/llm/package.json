@@ -1,0 +1,29 @@
+{
+	"name": "@modulus/llm",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"type": "module",
+	"exports": {
+		".": {
+			"types": "./dist/types.d.ts",
+			"import": "./dist/types.js"
+		},
+		"./router": {
+			"types": "./dist/router.d.ts",
+			"import": "./dist/router.js"
+		}
+	},
+	"scripts": {
+		"build": "tsc -p tsconfig.json",
+		"typecheck": "tsc --noEmit -p tsconfig.json",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"groq-sdk": "^1.6.0",
+		"@modulus/queues": "1.0.0"
+	}
+}

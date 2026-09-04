@@ -2,7 +2,7 @@ import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import { ingestPayloadSchema } from "@modulus/otel-core/schema";
 import { requireApiKey } from "../middleware/apiKeyAuth";
-import { ingestionQueue } from "../lib/queues";
+import { ingestionQueue } from "@modulus/queues";
 
 export const ingestRouter = Router();
 
@@ -10,7 +10,7 @@ export const ingestRouter = Router();
 const ingestLimiter = rateLimit({
 	windowMs: 60_000,
 	limit: 300,
-	keyGenerator: (req) => req.project?.id ?? req.ip,
+	keyGenerator: (req) => req.project!.id,
 });
 
 ingestRouter.use(requireApiKey, ingestLimiter);

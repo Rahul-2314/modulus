@@ -1,4 +1,4 @@
-import "./lib/env";
+import "@modulus/config";
 import { app } from "./app";
 
 export { app } from "./app";

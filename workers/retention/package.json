@@ -1,0 +1,25 @@
+{
+	"name": "retention",
+	"version": "1.0.0",
+	"description": "",
+	"main": "./dist/worker.js",
+	"type": "module",
+	"scripts": {
+		"build": "tsc -p tsconfig.json",
+		"typecheck": "tsc --noEmit -p tsconfig.json",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"@modulus/config": "*",
+		"@modulus/database": "^1.0.0",
+		"@modulus/queues": "^1.0.0",
+		"bullmq": "^6.3.1"
+	},
+	"devDependencies": {
+		"@types/node": "^26.3.0",
+		"typescript": "^5.9.0"
+	}
+}

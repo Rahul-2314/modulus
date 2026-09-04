@@ -1,0 +1,6 @@
+import { ModulusCallbackHandler } from "@modulus/adapter-langchain";
+import { AgentExecutor } from "langchain/agents";
+
+const modulus = new ModulusCallbackHandler({ apiKey: process.env.MODULUS_API_KEY!, agentName: "support-agent" });
+const executor = new AgentExecutor({ agent, tools, callbacks: [modulus] });
+await executor.invoke({ input: "..." });

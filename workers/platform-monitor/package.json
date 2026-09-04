@@ -1,0 +1,19 @@
+{
+	"name": "platform-monitor",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"build": "tsc -p tsconfig.json",
+		"typecheck": "tsc --noEmit -p tsconfig.json",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"keywords": [],
+	"type": "commonjs",
+	"dependencies": {
+		"@modulus/database": "^1.0.0",
+		"@modulus/notifications": "^1.0.0",
+		"bullmq": "^6.3.4",
+		"ioredis": "^5.11.1"
+	}
+}

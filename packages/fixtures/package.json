@@ -1,0 +1,29 @@
+{
+	"name": "@modulus/fixtures",
+	"version": "1.0.0",
+	"description": "",
+	"main": "./dist/fixture.js",
+	"types": "./dist/fixture.d.ts",
+	"type": "module",
+	"scripts": {
+		"build": "tsc -p tsconfig.json",
+		"typecheck": "tsc --noEmit -p tsconfig.json",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"exports": {
+		".": {
+			"types": "./dist/fixture.d.ts",
+			"import": "./dist/fixture.js"
+		}
+	},
+	"dependencies": {
+		"@modulus/database": "*",
+		"@modulus/otel-core": "*"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"typescript": "^7.0.2"
+	}
+}

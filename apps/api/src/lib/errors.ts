@@ -45,6 +45,22 @@ export function errorHandler(
 		});
 	}
 
+	if (
+		typeof err === "object" &&
+		err !== null &&
+		(("type" in err && err.type === "entity.too.large") ||
+			("status" in err && err.status === 413))
+	) {
+		return res.status(413).json({
+			success: false,
+			error: {
+				code: "PAYLOAD_TOO_LARGE",
+				message: "Request body is too large",
+				requestId,
+			},
+		});
+	}
+
 	console.error(`[${requestId}]`, err);
 	return res.status(500).json({
 		success: false,
