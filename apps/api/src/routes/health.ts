@@ -5,6 +5,13 @@ import { qdrant } from "@modulus/vector-store/qdrant";
 
 export const healthRouter = Router();
 
+healthRouter.get("/", (_req, res) => {
+	res.status(200).json({
+		success: true,
+		status: "ok",
+	});
+});
+
 healthRouter.get("/deep", async (_req, res) => {
 	const checks: Record<string, "ok" | "error"> = {};
 
