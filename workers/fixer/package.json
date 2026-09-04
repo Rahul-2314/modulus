@@ -14,7 +14,8 @@
 	"license": "ISC",
 	"dependencies": {
 		"@modulus/config": "*",
-		"@modulus/database": "*",
+		"@modulus/database": "1.0.0",
+  		"@modulus/otel-core": "1.0.0",
 		"@modulus/fixtures": "*",
 		"@modulus/github": "*",
 		"@modulus/llm": "*",
