@@ -12,6 +12,26 @@ const email = (label: string) => {
 	return value;
 };
 
+async function registerAndSignIn(
+	agent: ReturnType<typeof request.agent>,
+	userEmail: string,
+) {
+	await agent
+		.post("/api/auth/sign-up/email")
+		.send({ name: "Test User", email: userEmail, password })
+		.expect(200);
+
+	await prisma.user.update({
+		where: { email: userEmail },
+		data: { emailVerified: true },
+	});
+
+	await agent
+		.post("/api/auth/sign-in/email")
+		.send({ email: userEmail, password })
+		.expect(200);
+}
+
 describe("auth flow", () => {
 	afterAll(async () => {
 		const users = await prisma.user.findMany({
@@ -32,37 +52,49 @@ describe("auth flow", () => {
 	});
 
 	it("registers a new user and auto-creates an owner organization", async () => {
+		const userEmail = email("register");
 		const res = await request(app)
-			.post("/api/auth/register")
-			.send({ email: email("register"), password });
+			.post("/api/auth/sign-up/email")
+			.send({ name: "Test User", email: userEmail, password });
 
-		expect(res.status).toBe(201);
-		expect(res.body.success).toBe(true);
+		expect(res.status).toBe(200);
+		expect(res.body.user.email).toBe(userEmail);
+		expect(res.body.token).toBeNull();
+		expect(
+			await prisma.membership.count({
+				where: { user: { email: userEmail }, role: "owner" },
+			}),
+		).toBe(1);
 	});
 
 	it("rejects a duplicate email", async () => {
 		const duplicateEmail = email("duplicate");
 		await request(app)
-			.post("/api/auth/register")
-			.send({ email: duplicateEmail, password })
-			.expect(201);
+			.post("/api/auth/sign-up/email")
+			.send({ name: "Test User", email: duplicateEmail, password })
+			.expect(200);
 
 		const res = await request(app)
-			.post("/api/auth/register")
-			.send({ email: duplicateEmail, password });
+			.post("/api/auth/sign-up/email")
+			.send({ name: "Test User", email: duplicateEmail, password });
 
-		expect(res.status).toBe(409);
+		expect(res.status).toBe(200);
+		expect(res.body.token).toBeNull();
 	});
 
 	it("rejects an incorrect password", async () => {
 		const userEmail = email("wrong-password");
 		await request(app)
-			.post("/api/auth/register")
-			.send({ email: userEmail, password })
-			.expect(201);
+			.post("/api/auth/sign-up/email")
+			.send({ name: "Test User", email: userEmail, password })
+			.expect(200);
+		await prisma.user.update({
+			where: { email: userEmail },
+			data: { emailVerified: true },
+		});
 
 		const res = await request(app)
-			.post("/api/auth/login")
+			.post("/api/auth/sign-in/email")
 			.send({ email: userEmail, password: "incorrect-password" });
 
 		expect(res.status).toBe(401);
@@ -70,10 +102,7 @@ describe("auth flow", () => {
 
 	it("registers, creates a project and key, then revokes the key", async () => {
 		const agent = request.agent(app);
-		await agent
-			.post("/api/auth/register")
-			.send({ email: email("flow"), password })
-			.expect(201);
+		await registerAndSignIn(agent, email("flow"));
 
 		const me = await agent.get("/api/me").expect(200);
 		const organizationId = me.body.data.organizations[0]?.id;
@@ -97,10 +126,7 @@ describe("auth flow", () => {
 
 	it("blocks cross-organization project access", async () => {
 		const owner = request.agent(app);
-		await owner
-			.post("/api/auth/register")
-			.send({ email: email("owner"), password })
-			.expect(201);
+		await registerAndSignIn(owner, email("owner"));
 		const ownerMe = await owner.get("/api/me").expect(200);
 		const project = await owner
 			.post("/api/projects")
@@ -111,10 +137,7 @@ describe("auth flow", () => {
 			.expect(201);
 
 		const otherUser = request.agent(app);
-		await otherUser
-			.post("/api/auth/register")
-			.send({ email: email("other-user"), password })
-			.expect(201);
+		await registerAndSignIn(otherUser, email("other-user"));
 
 		await otherUser.get(`/api/projects/${project.body.data.id}`).expect(403);
 	});

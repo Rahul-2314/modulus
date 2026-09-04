@@ -16,6 +16,10 @@
 			"import": "./dist/fixture.js"
 		}
 	},
+	"dependencies": {
+		"@modulus/database": "*",
+		"@modulus/otel-core": "*"
+	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
