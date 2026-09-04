@@ -23,6 +23,7 @@
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
-		"groq-sdk": "^1.6.0"
+		"groq-sdk": "^1.6.0",
+		"@modulus/queues": "1.0.0"
 	}
 }
