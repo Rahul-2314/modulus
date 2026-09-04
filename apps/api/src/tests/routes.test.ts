@@ -4,6 +4,12 @@ import { randomUUID } from "node:crypto";
 import { app } from "../app.js";
 import { prisma } from "../lib/db.js";
 
+vi.mock("@modulus/email", () => ({
+	sendVerificationEmail: vi.fn().mockResolvedValue(undefined),
+	sendPasswordResetEmail: vi.fn().mockResolvedValue(undefined),
+	sendTwoFactorOtp: vi.fn().mockResolvedValue(undefined),
+}));
+
 const {
 	diagnosisAdd,
 	ingestionAdd,

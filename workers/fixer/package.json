@@ -21,6 +21,7 @@
 		"@modulus/llm": "1.0.0",
 		"@modulus/sandbox": "1.0.0",
 		"@modulus/cost-tier": "1.0.0",
+		"@modulus/queues": "1.0.0",
 		"bullmq": "^6.2.0",
 		"simple-git": "^3.36.0"
 	}

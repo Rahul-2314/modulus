@@ -1,8 +1,14 @@
 import { randomUUID } from "node:crypto";
-import { afterAll, describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it, vi } from "vitest";
 import request from "supertest";
 import { app } from "../app.js";
 import { prisma } from "../lib/db.js";
+
+vi.mock("@modulus/email", () => ({
+	sendVerificationEmail: vi.fn().mockResolvedValue(undefined),
+	sendPasswordResetEmail: vi.fn().mockResolvedValue(undefined),
+	sendTwoFactorOtp: vi.fn().mockResolvedValue(undefined),
+}));
 
 const password = "password123";
 const createdEmails: string[] = [];

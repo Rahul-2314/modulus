@@ -11,6 +11,8 @@
 	"keywords": [],
 	"type": "module",
 	"dependencies": {
-		"@modulus/database": "^1.0.0"
+		"@modulus/database": "^1.0.0",
+		"@modulus/incident-engine": "1.0.0",
+		"@modulus/queues": "1.0.0"
 	}
 }

@@ -19,5 +19,9 @@
 		}
 	},
 	"keywords": [],
-	"type": "module"
+	"type": "module",
+	"dependencies": {
+		"@modulus/crypto": "1.0.0",
+		"@modulus/email": "1.0.0"
+	}
 }
