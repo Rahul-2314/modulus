@@ -23,9 +23,14 @@ import { githubRouter } from "./routes/github";
 export const app = express();
 
 // CORS handling
+const WEB_APP_URL = process.env.WEB_APP_URL;
+if (!WEB_APP_URL) {
+	throw new Error("WEB_APP_URL is not configured");
+}
+
 app.use(
 	cors({
-		origin: process.env.WEB_APP_URL,
+		origin: WEB_APP_URL,
 		credentials: true,
 		methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 		allowedHeaders: ["Content-Type", "Authorization"],
