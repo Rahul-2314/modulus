@@ -15,8 +15,10 @@ export const auth = betterAuth({
 	database: prismaAdapter(prisma, { provider: "postgresql" }),
 	appName: "Modulus",
 	secret: process.env.BETTER_AUTH_SECRET!,
-	baseURL: process.env.API_BASE_URL,
-	trustedOrigins: [process.env.WEB_APP_URL!],
+	baseURL: "https://modulus-api-qr74.onrender.com",
+	trustedOrigins: ["*"],
+	// baseURL: process.env.API_BASE_URL,
+	// trustedOrigins: [process.env.WEB_APP_URL!],
 
 	emailAndPassword: {
 		enabled: true,
