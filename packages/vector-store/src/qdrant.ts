@@ -1,6 +1,9 @@
 import { QdrantClient } from "@qdrant/js-client-rest";
 
-export const qdrant = new QdrantClient({ url: process.env.QDRANT_URL! });
+export const qdrant = new QdrantClient({
+	url: process.env.QDRANT_URL!,
+	apiKey: process.env.QDRANT_API_KEY!,
+});
 
 const COLLECTION = "incident_diagnoses";
 const VECTOR_SIZE = 384; // all-MiniLM-L6-v2 output dimension
