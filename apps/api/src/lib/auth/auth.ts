@@ -11,12 +11,22 @@ import { audit } from "../audit";
 // create connection (with Organization and Membership models maintain flow)
 import { personalOrg } from "./bootstrap.js";
 
+const API_BASE_URL = process.env.API_BASE_URL;
+const WEB_APP_URL = process.env.WEB_APP_URL;
+
+if (!API_BASE_URL) {
+	throw new Error("API_BASE_URL is not configured");
+}
+if (!WEB_APP_URL) {
+	throw new Error("WEB_APP_URL is not configured");
+}
+
 export const auth = betterAuth({
 	database: prismaAdapter(prisma, { provider: "postgresql" }),
 	appName: "Modulus",
 	secret: process.env.BETTER_AUTH_SECRET!,
-	baseURL: process.env.API_BASE_URL,
-	trustedOrigins: [process.env.WEB_APP_URL!],
+	baseURL: API_BASE_URL,
+	trustedOrigins: [WEB_APP_URL],
 
 	emailAndPassword: {
 		enabled: true,
