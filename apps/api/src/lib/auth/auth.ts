@@ -2,24 +2,14 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { twoFactor } from "better-auth/plugins";
 import { prisma } from "@modulus/database";
-import {
-	sendVerificationEmail,
-	sendPasswordResetEmail,
-	sendTwoFactorOtp,
-} from "@modulus/email";
+import { sendPasswordResetEmail, sendTwoFactorOtp } from "@modulus/email"; // sendVerificationEmail import removed — no longer used
 import { audit } from "../audit";
-// create connection (with Organization and Membership models maintain flow)
 import { personalOrg } from "./bootstrap.js";
 
 const API_BASE_URL = process.env.API_BASE_URL;
 const WEB_APP_URL = process.env.WEB_APP_URL;
-
-if (!API_BASE_URL) {
-	throw new Error("API_BASE_URL is not configured");
-}
-if (!WEB_APP_URL) {
-	throw new Error("WEB_APP_URL is not configured");
-}
+if (!API_BASE_URL) throw new Error("API_BASE_URL is not configured");
+if (!WEB_APP_URL) throw new Error("WEB_APP_URL is not configured");
 
 export const auth = betterAuth({
 	database: prismaAdapter(prisma, { provider: "postgresql" }),
@@ -30,24 +20,16 @@ export const auth = betterAuth({
 
 	emailAndPassword: {
 		enabled: true,
-		requireEmailVerification: true,
-		sendResetPassword: async ({ user, url }) =>
-			sendPasswordResetEmail(user.email, url),
+		requireEmailVerification: false, // signup/login create a session immediately, no email step
+		sendResetPassword: async ({ user, url }) => sendPasswordResetEmail(user.email, url),
 	},
-
-	emailVerification: {
-		sendOnSignUp: true,
-		autoSignInAfterVerification: true,
-		sendVerificationEmail: async ({ user, url }) =>
-			sendVerificationEmail(user.email, url),
-	},
+	// emailVerification block removed entirely — nothing gates on it now
 
 	socialProviders: {
 		google: {
 			clientId: process.env.GOOGLE_CLIENT_ID!,
 			clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
 		},
-		// Reuses the same GitHub App client credentials
 		github: {
 			clientId: process.env.GITHUB_APP_CLIENT_ID!,
 			clientSecret: process.env.GITHUB_APP_CLIENT_SECRET!,
@@ -57,29 +39,23 @@ export const auth = betterAuth({
 	plugins: [
 		twoFactor({
 			issuer: "Modulus",
-			totpOptions: { digits: 6, period: 30 }, // authenticator app
+			totpOptions: { digits: 6, period: 30 },
 			otpOptions: {
 				sendOTP: async ({ user, otp }) => sendTwoFactorOtp(user.email, otp),
 				period: 5,
 				allowedAttempts: 5,
 				storeOTP: "encrypted",
 			},
-			backupCodeOptions: {
-				amount: 10,
-				length: 10,
-				storeBackupCodes: "encrypted",
-			},
+			backupCodeOptions: { amount: 10, length: 10, storeBackupCodes: "encrypted" },
 		}),
 	],
 
-	//   7-day expiry
 	session: { expiresIn: 60 * 60 * 24 * 7, updateAge: 60 * 60 * 24 },
 	rateLimit: { window: 15 * 60, max: 10 },
 
 	databaseHooks: {
 		user: {
 			create: {
-				// Better Auth never needs to know that model exists (Organization and Membership models)
 				after: async (user) => personalOrg(user.id, user.email),
 			},
 		},
@@ -91,9 +67,7 @@ export const auth = betterAuth({
 						action: "login",
 						resourceType: "user",
 						resourceId: session.userId,
-						...(typeof session.ipAddress === "string"
-							? { ipAddress: session.ipAddress }
-							: {}),
+						...(typeof session.ipAddress === "string" ? { ipAddress: session.ipAddress } : {}),
 					}),
 			},
 		},
