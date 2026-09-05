@@ -24,12 +24,12 @@ export const app = express();
 
 // CORS handling
 app.use(
-	cors({
-		origin: "http://localhost:3000",
-		credentials: true,
-		methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-		allowedHeaders: ["Content-Type", "Authorization"],
-	}),
+  cors({
+    origin: true,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
 );
 
 // at top before any (body-parsing middleware) (needs the raw request stream)
